@@ -11,16 +11,16 @@ public class ClosestStationTest {
         //given
         ClosestStation closestStation = new ClosestStation();
         CitiBikeService service = new CitiBikeServiceFactory().getService();
-        Stations stationsResponse = service.StatusResponse().blockingGet();
+        Stations stationsResponse = service.statusResponse().blockingGet();
         Station[] stations = stationsResponse.data.stations;
-        String Id = stations[0].station_id;
+        String id = stations[0].station_id;
 
         //when
-        Station station = closestStation.findStationById(stations, Id);
+        Station station = closestStation.findStationById(stations, id);
 
         //then
         assertNotNull(station);
-        assertEquals(Id, station.station_id);
+        assertEquals(id, station.station_id);
     }
 
     @Test
@@ -28,7 +28,7 @@ public class ClosestStationTest {
         //given
         ClosestStation closestStation = new ClosestStation();
         CitiBikeService service = new CitiBikeServiceFactory().getService();
-        Stations stations = service.StatusResponse().blockingGet();
+        Stations stations = service.statusResponse().blockingGet();
         double lat = 40.748817; // Example: Latitude of NYC (Empire State Building)
         double lon = -73.985428; // Example: Longitude of NYC (Empire State Building)
 
@@ -45,7 +45,7 @@ public class ClosestStationTest {
         //given
         ClosestStation closestStation = new ClosestStation();
         CitiBikeService service = new CitiBikeServiceFactory().getService();
-        Stations stations = service.StatusResponse().blockingGet();
+        Stations stations = service.statusResponse().blockingGet();
         double lat = 40.748817; // Example: Latitude of NYC (Empire State Building)
         double lon = -73.985428; // Example: Longitude of NYC (Empire State Building)
 

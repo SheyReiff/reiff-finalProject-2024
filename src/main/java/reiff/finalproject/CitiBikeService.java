@@ -7,10 +7,10 @@ public interface CitiBikeService {
 
     @GET("/gbfs/en/station_information.json")
 
-    Single<Stations> StationsResponse();
+    Single<Stations> stationsResponse();
 
     @GET("/gbfs/en/station_status.json")
 
-    Single<Stations> StatusResponse();
+    Single<Stations> statusResponse();
 
 }

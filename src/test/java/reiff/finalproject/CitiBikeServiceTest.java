@@ -3,14 +3,15 @@ package reiff.finalproject;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 public class CitiBikeServiceTest {
     @Test
-    public void StationsResponse() {
+    public void stationsResponse() {
         //given
         CitiBikeService service = new CitiBikeServiceFactory().getService();
 
         //when
-        Stations stations = service.StationsResponse().blockingGet();
+        Stations stations = service.stationsResponse().blockingGet();
         Station station = stations.data.stations[0];
 
         //then
@@ -21,12 +22,12 @@ public class CitiBikeServiceTest {
     }
 
     @Test
-    public void StatusResponse() {
+    public void statusResponse() {
         //given
         CitiBikeService service = new CitiBikeServiceFactory().getService();
 
         //when
-        Stations stations = service.StatusResponse().blockingGet();
+        Stations stations = service.statusResponse().blockingGet();
         Station station = stations.data.stations[0];
 
 
