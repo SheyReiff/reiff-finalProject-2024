@@ -12,9 +12,9 @@ public class CitiBikeServiceTest {
 
         //when
         Stations stations = service.stationsResponse().blockingGet();
-        Station station = stations.data.stations[0];
 
         //then
+        Station station = stations.data.stations[0];
         assertNotNull(station.station_id);
         assertNotNull(station.name);
         assertNotEquals(0, station.lat);
@@ -28,10 +28,9 @@ public class CitiBikeServiceTest {
 
         //when
         Stations stations = service.statusResponse().blockingGet();
-        Station station = stations.data.stations[0];
-
 
         //then
+        Station station = stations.data.stations[0];
         assertNotNull(station.station_id);
         assertTrue(station.num_bikes_available >= 0);
         assertTrue(station.num_docks_available >= 0);

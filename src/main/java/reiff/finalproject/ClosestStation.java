@@ -1,5 +1,7 @@
 package reiff.finalproject;
 
+import java.util.HashMap;
+
 public class ClosestStation {
 
     public Station findStationById(Station[] stations, String stationId) {
@@ -41,6 +43,23 @@ public class ClosestStation {
             }
         }
         return closestStation;
+    }
+
+    public Station[] mergeStations(Station[] stationsInfo, Station[] statusInfo) {
+        HashMap<String, Station> statusMap = new HashMap<>();
+        for (Station status : statusInfo) {
+            statusMap.put(status.station_id, status);
+        }
+
+        for (Station info : stationsInfo) {
+            Station status = statusMap.get(info.station_id);
+            if (status != null) {
+                info.num_bikes_available = status.num_bikes_available;
+                info.num_docks_available = status.num_docks_available;
+            }
+        }
+
+        return stationsInfo;
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
