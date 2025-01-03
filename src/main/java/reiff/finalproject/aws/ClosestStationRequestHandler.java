@@ -9,8 +9,7 @@ import reiff.finalproject.CitiBikeServiceFactory;
 import reiff.finalproject.ClosestStation;
 import reiff.finalproject.Station;
 
-public class ClosestStationRequestHandler implements RequestHandler<APIGatewayProxyRequestEvent,
-        ClosestStationRequestHandler.Response> {
+public class ClosestStationRequestHandler implements RequestHandler<APIGatewayProxyRequestEvent, Response> {
 
     @Override
     public Response handleRequest(APIGatewayProxyRequestEvent event, Context context) {
@@ -25,75 +24,14 @@ public class ClosestStationRequestHandler implements RequestHandler<APIGatewayPr
         Station[] statusInfo = service.statusResponse().blockingGet().data.stations;
         Station[] stations = closestStation.mergeStations(stationsInfo, statusInfo);
 
-        Station startStation = closestStation.findClosestStationWithBikes(stations, request.from.lat, request.from.lon);
-        Station endStation = closestStation.findClosestStationWithSlots(stations, request.to.lat, request.to.lon);
+        Station startStation = closestStation.findClosestStationWithBikes(stations, request.getFrom().getLat(), request.getFrom().getLon());
+        Station endStation = closestStation.findClosestStationWithSlots(stations, request.getTo().getLat(), request.getTo().getLon());
 
         return new Response(
-                request.from,
+                request.getFrom(),
                 startStation,
                 endStation,
-                request.to
+                request.getTo()
         );
-    }
-
-
-    record Request(
-            Coordinates from,
-            Coordinates to
-    ) {
-    }
-
-    record Response(
-            Coordinates from,
-            Station startStation,
-            Station endStation,
-            Coordinates to
-    ) {
-        public String toJsonString() {
-            return "{\n" +
-                    "  \"from\": {\n" +
-                    "    \"lat\": " + from.lat + ",\n"
-                    +
-                    "    \"lon\": " + from.lon + "\n"
-                    +
-                    "  },\n"
-                    +
-                    "  \"start\": {\n"
-                    +
-                    "    \"lat\": " + startStation.lat + ",\n"
-                    +
-                    "    \"lon\": " + startStation.lon + ",\n"
-                    +
-                    "    \"name\": \"" + startStation.name + "\",\n"
-                    +
-                    "    \"station_id\": \"" + startStation.station_id + "\"\n"
-                    +
-                    "  },\n"
-                    +
-                    "  \"end\": {\n"
-                    +
-                    "    \"lat\": " + endStation.lat + ",\n"
-                    +
-                    "    \"lon\": " + endStation.lon + ",\n"
-                    +
-                    "    \"name\": \"" + endStation.name + "\",\n"
-                    +
-                    "    \"station_id\": \"" + endStation.station_id + "\"\n"
-                    +
-                    "  },\n"
-                    +
-                    "  \"to\": {\n"
-                    +
-                    "    \"lat\": " + to.lat + ",\n"
-                    +
-                    "    \"lon\": " + to.lon + "\n"
-                    +
-                    "  }\n"
-                    +
-                    "}";
-        }
-    }
-
-    public record Coordinates(double lat, double lon) {
     }
 }
