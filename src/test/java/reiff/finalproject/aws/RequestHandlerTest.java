@@ -2,7 +2,6 @@
 package reiff.finalproject.aws;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.CognitoUserPoolVerifyAuthChallengeResponseEvent;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,9 +29,12 @@ public class RequestHandlerTest {
         ClosestStationRequestHandler requestHandler = new ClosestStationRequestHandler();
 
         //when
+
         Response response = requestHandler.handleRequest(apiEvent, null);
         //then
 
         assertNotNull(response.getStartStation().station_id);
+        System.out.println(response.toJsonString());
+
     }
 }
