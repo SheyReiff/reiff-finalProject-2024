@@ -15,8 +15,19 @@ public class ClosestStationRequestHandler implements RequestHandler<APIGatewayPr
     public Response handleRequest(APIGatewayProxyRequestEvent event, Context context) {
         // Parse the request body
         String body = event.getBody();
+
+        System.out.println("Event Body: " + body);
+        if (body == null || body.isEmpty()) {
+            throw new IllegalArgumentException("Request body is null or empty");
+        }
+
+
         Gson gson = new Gson();
         Request request = gson.fromJson(body, Request.class);
+
+        if (request == null || request.getFrom() == null || request.getTo() == null) {
+            throw new IllegalArgumentException("Invalid request: from/to coordinates are null");
+        }
 
         ClosestStation closestStation = new ClosestStation();
         CitiBikeService service = new CitiBikeServiceFactory().getService();

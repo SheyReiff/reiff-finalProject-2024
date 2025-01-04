@@ -17,12 +17,20 @@ public class Response {
         this.to = to;
     }
 
+    public Coordinate getFrom() {
+        return from;
+    }
+
     public Station getStartStation() {
         return startStation;
     }
 
     public Station getEndStation() {
         return endStation;
+    }
+
+    public Coordinate getTo() {
+        return to;
     }
 
     public String toJsonString() {
