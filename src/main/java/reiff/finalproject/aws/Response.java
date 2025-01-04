@@ -9,7 +9,7 @@ public class Response {
     private Station endStation;
     private Coordinate to;
 
-    public Response(Coordinate from, Station startStation, Station endStation, Coordinate to){
+    public Response(Coordinate from, Station startStation, Station endStation, Coordinate to) {
 
         this.from = from;
         this.startStation = startStation;
@@ -26,8 +26,10 @@ public class Response {
     }
 
     public String toJsonString() {
-        return "{\n" +
-                "  \"from\": {\n" +
+        return "{\n"
+                +
+                "  \"from\": {\n"
+                +
                 "    \"lat\": " + from.getLat() + ",\n"
                 +
                 "    \"lon\": " + from.getLon() + "\n"

@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class RequestHandlerTest {
 
     @Test
-    public void handleRequest(){
+    public void handleRequest() {
 
         //given
         String json = """
