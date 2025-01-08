@@ -4,10 +4,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.google.gson.Gson;
-import reiff.finalproject.CitiBikeService;
-import reiff.finalproject.CitiBikeServiceFactory;
-import reiff.finalproject.ClosestStation;
-import reiff.finalproject.Station;
+import reiff.finalproject.*;
+
 
 public class ClosestStationRequestHandler implements RequestHandler<APIGatewayProxyRequestEvent, Response> {
 
@@ -31,8 +29,13 @@ public class ClosestStationRequestHandler implements RequestHandler<APIGatewayPr
 
         ClosestStation closestStation = new ClosestStation();
         CitiBikeService service = new CitiBikeServiceFactory().getService();
-        Station[] stationsInfo = service.stationsResponse().blockingGet().data.stations;
+        StationsCache stationsCache = new StationsCache(service);
+
+        Station[] stationsInfo = stationsCache.getStationsResponse().data.stations;
+
         Station[] statusInfo = service.statusResponse().blockingGet().data.stations;
+
+
         Station[] stations = closestStation.mergeStations(stationsInfo, statusInfo);
 
         Station startStation = closestStation.findClosestStationWithBikes(stations,
