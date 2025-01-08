@@ -6,7 +6,6 @@ import org.jxmapviewer.input.*;
 import org.jxmapviewer.painter.CompoundPainter;
 import org.jxmapviewer.painter.Painter;
 import org.jxmapviewer.viewer.*;
-import reiff.finalproject.aws.Response;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
@@ -25,12 +24,6 @@ public class CitiBikeFrame extends JFrame {
     private final WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<>();
     private final CitiBikeController controller;
     private final JProgressBar progressBar;
-    private final List<GeoPosition> track = Arrays.asList();
-    private final Set<Waypoint> waypoints = new HashSet<>(Arrays.asList());
-    private boolean isFirstClick = true;
-    private boolean waypointsLocked = false;
-    private GeoPosition from;
-    private GeoPosition to;
 
     public CitiBikeFrame() {
         setTitle("CitiBike Route Finder");
@@ -95,11 +88,9 @@ public class CitiBikeFrame extends JFrame {
 
     private MouseAdapter createMapClickListener() {
         return new MouseAdapter() {
-
             @Override
             public void mouseClicked(MouseEvent e) {
-
-                if (waypoints.size() >= 4) {
+                if (controller.waypoints.size() >= 4) {
                     JOptionPane.showMessageDialog(
                             CitiBikeFrame.this,
                             "Please reset your request to select new locations.",
@@ -108,9 +99,7 @@ public class CitiBikeFrame extends JFrame {
                     );
                     return;
                 }
-
-
-                if (waypointsLocked) {
+                if (controller.waypointsLocked) {
                     JOptionPane.showMessageDialog(
                             CitiBikeFrame.this,
                             "Waypoints are already set. Reset to choose new locations.",
@@ -123,45 +112,23 @@ public class CitiBikeFrame extends JFrame {
                 GeoPosition clickedPosition = mapViewer.convertPointToGeoPosition(
                         new Point2D.Double(e.getX(), e.getY()));
 
-                if (isFirstClick) {
-
-                    from = clickedPosition;
+                if (controller.isFirstClick) {
+                    controller.handleFirstClick(clickedPosition);
                     fromLabel.setText("From: " + clickedPosition);
-                    isFirstClick = false;
-                    waypoints.add(new DefaultWaypoint(from));
-                    waypointPainter.setWaypoints(waypoints);
+                    waypointPainter.setWaypoints(controller.waypoints);
                     mapViewer.setOverlayPainter(waypointPainter);
-
                 } else {
-
+                    controller.handleSecondClick(clickedPosition);
                     toLabel.setText("To: " + clickedPosition);
-                    to = clickedPosition;
-                    isFirstClick = true;
-                    waypoints.add(new DefaultWaypoint(to));
-                    waypointPainter.setWaypoints(waypoints);
+                    waypointPainter.setWaypoints(controller.waypoints);
                     mapViewer.setOverlayPainter(waypointPainter);
-                    waypointsLocked = true;
                 }
             }
-
         };
     }
 
-    private void resetSelections() {
-        fromLabel.setText("From:");
-        toLabel.setText("To:");
-        waypoints.clear();
-        track.clear();
-        waypointPainter.setWaypoints(waypoints);
-
-        mapViewer.setOverlayPainter(null);
-        waypointsLocked = false;
-        mapViewer.setZoom(7);
-    }
-
     private void handleCalculate() {
-
-        if (waypoints.size() < 2) {
+        if (controller.waypoints.size() < 2) {
             JOptionPane.showMessageDialog(this,
                     "Please select both 'From' and 'To' points on the map.",
                     "Insufficient Points", JOptionPane.WARNING_MESSAGE);
@@ -171,50 +138,35 @@ public class CitiBikeFrame extends JFrame {
         progressBar.setIndeterminate(true);
         progressBar.setVisible(true);
 
-        SwingWorker<Response, Void> worker = new SwingWorker<>() {
-            @Override
-            protected Response doInBackground() {
-                return controller.getRecommendedStations(from, to);
-            }
+        controller.calculateRoute(controller.from, controller.to, this);
+    }
 
-            @Override
-            protected void done() {
-                try {
+    public void updateMap(List<GeoPosition> track, Set<Waypoint> waypoints, GeoPosition from,
+                          GeoPosition startStation, GeoPosition endStation, GeoPosition to) {
+        routePainter.setTrack(track);
+        waypointPainter.setWaypoints(waypoints);
 
-                    Response response = get();
+        List<Painter<JXMapViewer>> painters = List.of(routePainter, waypointPainter);
+        mapViewer.setOverlayPainter(new CompoundPainter<>(painters));
 
-                    GeoPosition startStation = new GeoPosition(response.getStartStation().lat,
-                            response.getStartStation().lon);
-                    GeoPosition endStation = new GeoPosition(response.getEndStation().lat,
-                            response.getEndStation().lon);
+        mapViewer.zoomToBestFit(new HashSet<>(Arrays.asList(from, startStation, endStation, to)), 1.0);
+    }
+    public void showCalculatingError(String message) {
+        JOptionPane.showMessageDialog(this,
+                message, "Error",
+                JOptionPane.ERROR_MESSAGE);
+    }
 
-                    List<GeoPosition> track = Arrays.asList(
-                            from,
-                            startStation,
-                            endStation,
-                            to
-                    );
-                    routePainter.setTrack(track);
+    public void hideProgressBar() {
+        progressBar.setIndeterminate(false);
+        progressBar.setVisible(false);
+    }
 
-                    waypoints.add(new DefaultWaypoint(startStation));
-                    waypoints.add(new DefaultWaypoint(endStation));
-                    waypointPainter.setWaypoints(waypoints);
-
-                    List<Painter<JXMapViewer>> painters = List.of(routePainter, waypointPainter);
-                    mapViewer.setOverlayPainter(new CompoundPainter<>(painters));
-
-                    mapViewer.zoomToBestFit(Set.of(from, startStation, endStation, to), 1.0);
-
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(CitiBikeFrame.this, "Error calculating route: "
-                            + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                } finally {
-                    progressBar.setIndeterminate(false);
-                    progressBar.setVisible(false);
-                }
-            }
-        };
-
-        worker.execute();
+    private void resetSelections() {
+        controller.resetSelectionsController();
+        fromLabel.setText("From:");
+        toLabel.setText("To:");
+        mapViewer.setOverlayPainter(null);
+        mapViewer.setZoom(7);
     }
 }

@@ -20,7 +20,7 @@ The map will also show the nearest CitiBike stations based on the location data,
 intuitive way to interact with the data.
 
 
-![game](screenshots%2FScreenshot%202025-01-08%20at%2002.30.55.png)
+![MapView.png](screenshots%2FMapView.png)
 
 ### Resources
 * [Citi Bike JSON Information](https://gbfs.citibikenyc.com/gbfs/en/station_information.json)
