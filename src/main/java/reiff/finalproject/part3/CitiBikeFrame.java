@@ -151,6 +151,7 @@ public class CitiBikeFrame extends JFrame {
 
         mapViewer.zoomToBestFit(new HashSet<>(Arrays.asList(from, startStation, endStation, to)), 1.0);
     }
+
     public void showCalculatingError(String message) {
         JOptionPane.showMessageDialog(this,
                 message, "Error",

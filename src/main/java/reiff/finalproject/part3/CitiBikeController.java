@@ -62,8 +62,10 @@ public class CitiBikeController {
                 .observeOn(SwingSchedulers.edt())
                 .subscribe(
                         response -> {
-                            GeoPosition startStation = new GeoPosition(response.getStartStation().lat, response.getStartStation().lon);
-                            GeoPosition endStation = new GeoPosition(response.getEndStation().lat, response.getEndStation().lon);
+                            GeoPosition startStation = new GeoPosition(response.getStartStation().lat,
+                                    response.getStartStation().lon);
+                            GeoPosition endStation = new GeoPosition(response.getEndStation().lat,
+                                    response.getEndStation().lon);
 
                             List<GeoPosition> track = Arrays.asList(from, startStation, endStation, to);
                             waypoints.add(new DefaultWaypoint(startStation));
