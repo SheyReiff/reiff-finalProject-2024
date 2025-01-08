@@ -120,8 +120,8 @@ public class CitiBikeFrame extends JFrame {
                     return;
                 }
 
-                GeoPosition clickedPosition = mapViewer.convertPointToGeoPosition
-                        (new Point2D.Double(e.getX(), e.getY()));
+                GeoPosition clickedPosition = mapViewer.convertPointToGeoPosition(
+                        new Point2D.Double(e.getX(), e.getY()));
 
                 if (isFirstClick) {
 
