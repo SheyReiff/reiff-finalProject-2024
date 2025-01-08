@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RequestHandlerTest {
+public class ClosestStationRequestHandlerTest {
 
     @Test
     public void handleRequest() {
@@ -34,7 +34,6 @@ public class RequestHandlerTest {
         //then
 
         assertNotNull(response.getStartStation().station_id);
-        System.out.println(response.toJsonString());
 
     }
 }
