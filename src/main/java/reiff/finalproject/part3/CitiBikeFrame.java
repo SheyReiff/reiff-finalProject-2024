@@ -31,6 +31,7 @@ public class CitiBikeFrame extends JFrame {
     private boolean waypointsLocked = false;
     private GeoPosition from;
     private GeoPosition to;
+
     public CitiBikeFrame() {
         setTitle("CitiBike Route Finder");
         setSize(800, 600);
@@ -54,9 +55,9 @@ public class CitiBikeFrame extends JFrame {
         tileFactory.setThreadPoolSize(8);
 
 
-        GeoPosition Touro = new GeoPosition(40.77186915226104, -73.98834208465821);
+        GeoPosition touro = new GeoPosition(40.77186915226104, -73.98834208465821);
         mapViewer.setZoom(7);
-        mapViewer.setAddressLocation(Touro);
+        mapViewer.setAddressLocation(touro);
 
         MouseInputListener mia = new PanMouseInputListener(mapViewer);
         mapViewer.addMouseListener(mia);
@@ -119,7 +120,9 @@ public class CitiBikeFrame extends JFrame {
                     return;
                 }
 
-                GeoPosition clickedPosition = mapViewer.convertPointToGeoPosition(new Point2D.Double(e.getX(), e.getY()));
+                GeoPosition clickedPosition = mapViewer.convertPointToGeoPosition
+                        (new Point2D.Double(e.getX(), e.getY()));
+
                 if (isFirstClick) {
 
                     from = clickedPosition;
@@ -143,6 +146,7 @@ public class CitiBikeFrame extends JFrame {
 
         };
     }
+
     private void resetSelections() {
         fromLabel.setText("From:");
         toLabel.setText("To:");
