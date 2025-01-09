@@ -116,7 +116,8 @@ public class StationsCache {
     private boolean isS3DataRecent() {
         try {
             Instant s3LastModified = getLastModifiedFromS3();
-            return s3LastModified != null && Duration.between(s3LastModified, Instant.now()).compareTo(CACHE_DURATION) < 0;
+            return s3LastModified != null && Duration.between(s3LastModified,
+                    Instant.now()).compareTo(CACHE_DURATION) < 0;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
