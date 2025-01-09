@@ -9,6 +9,13 @@ import reiff.finalproject.*;
 
 public class ClosestStationRequestHandler implements RequestHandler<APIGatewayProxyRequestEvent, Response> {
 
+    private final StationsCache stationsCache;
+    private final CitiBikeService service;
+
+    public ClosestStationRequestHandler() {
+        this.service = new CitiBikeServiceFactory().getService();
+        this.stationsCache = new StationsCache(service);
+    }
     @Override
     public Response handleRequest(APIGatewayProxyRequestEvent event, Context context) {
         // Parse the request body
@@ -28,12 +35,8 @@ public class ClosestStationRequestHandler implements RequestHandler<APIGatewayPr
         }
 
         ClosestStation closestStation = new ClosestStation();
-        CitiBikeService service = new CitiBikeServiceFactory().getService();
-        StationsCache stationsCache = new StationsCache(service);
-
         Station[] stationsInfo = stationsCache.getStations().data.stations;
         Station[] statusInfo = service.statusResponse().blockingGet().data.stations;
-
 
         Station[] stations = closestStation.mergeStations(stationsInfo, statusInfo);
 

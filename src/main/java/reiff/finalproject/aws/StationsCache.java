@@ -3,6 +3,7 @@ package reiff.finalproject.aws;
 import com.google.gson.Gson;
 import reiff.finalproject.CitiBikeService;
 import reiff.finalproject.Stations;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -31,6 +32,7 @@ public class StationsCache {
         this.service = service;
         this.s3Client = S3Client.builder()
                 .region(Region.US_EAST_2)
+                .credentialsProvider(DefaultCredentialsProvider.create())
                 .build();
     }
 
