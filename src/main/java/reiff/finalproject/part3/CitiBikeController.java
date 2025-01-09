@@ -65,11 +65,8 @@ public class CitiBikeController {
                         response -> {
                             GeoPosition startStation = new GeoPosition(response.getStartStation().lat,
                                     response.getStartStation().lon);
-                            System.out.println("Here I got my start Station "+ response.getStartStation().name);
                             GeoPosition endStation = new GeoPosition(response.getEndStation().lat,
                                     response.getEndStation().lon);
-                            System.out.println("Here I got my end Station "+ response.getEndStation().name);
-                            System.out.println("My from " + from + " My to : ");
 
                             List<GeoPosition> track = Arrays.asList(from, startStation, endStation, to);
                             waypoints.add(new DefaultWaypoint(startStation));
