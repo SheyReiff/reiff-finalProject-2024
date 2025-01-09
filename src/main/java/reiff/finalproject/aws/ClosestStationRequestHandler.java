@@ -31,8 +31,7 @@ public class ClosestStationRequestHandler implements RequestHandler<APIGatewayPr
         CitiBikeService service = new CitiBikeServiceFactory().getService();
         StationsCache stationsCache = new StationsCache(service);
 
-        Station[] stationsInfo = stationsCache.getStationsResponse().data.stations;
-
+        Station[] stationsInfo = stationsCache.getStations().data.stations;
         Station[] statusInfo = service.statusResponse().blockingGet().data.stations;
 
 

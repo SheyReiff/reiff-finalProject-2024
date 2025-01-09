@@ -27,14 +27,14 @@ public class StationsCache {
     private final CitiBikeService service;
 
     public StationsCache(CitiBikeService service) {
-        this.service = service;
 
+        this.service = service;
         this.s3Client = S3Client.builder()
                 .region(Region.US_EAST_2)
                 .build();
     }
 
-    public Stations getStationsResponse() {
+    public Stations getStations() {
 
         System.out.println("Started getStations");
         if (stationsResponse != null && Duration.between(lastModified,
@@ -48,8 +48,8 @@ public class StationsCache {
         }
 
         if (stationsResponse == null && isS3DataRecent()) {
-                readFromS3();
-                lastModified = getLastModifiedFromS3();
+            readFromS3();
+            lastModified = getLastModifiedFromS3();
 
         } else if (stationsResponse == null && !isS3DataRecent()) {
             lastModified = Instant.now();
@@ -58,12 +58,12 @@ public class StationsCache {
 
 
         System.out.println("Ended getStations");
-       return stationsResponse;
+        return stationsResponse;
     }
 
     private void readFromS3() {
         System.out.println("Started readfroms3");
-
+        try {
             GetObjectRequest getObjectRequest = GetObjectRequest
                     .builder()
                     .bucket(BUCKET_NAME)
@@ -74,20 +74,27 @@ public class StationsCache {
             System.out.println("Ended readfroms3");
             stationsResponse = gson.fromJson(new InputStreamReader(inputStream), Stations.class);
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void writeToS3() {
         System.out.println("Started writetos3");
 
-        stationsResponse = service.statusResponse().blockingGet();
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(BUCKET_NAME)
-                .key(STATION_INFO_KEY)
-                .build();
+        try {
+            stationsResponse = service.statusResponse().blockingGet();
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(STATION_INFO_KEY)
+                    .build();
 
-        String jsonContent = gson.toJson(stationsResponse);
-        s3Client.putObject(putObjectRequest, RequestBody.fromString(jsonContent));
-        System.out.println("Ended writes3");
+            String jsonContent = gson.toJson(stationsResponse);
+            s3Client.putObject(putObjectRequest, RequestBody.fromString(jsonContent));
+            System.out.println("Ended writes3");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private Instant getLastModifiedFromS3() {
@@ -104,11 +111,16 @@ public class StationsCache {
         } catch (Exception e) {
             return null;
         }
-
     }
 
     private boolean isS3DataRecent() {
-        Instant s3LastModified = getLastModifiedFromS3();
-        return s3LastModified != null && Duration.between(s3LastModified, Instant.now()).compareTo(CACHE_DURATION) < 0;
+        try {
+            Instant s3LastModified = getLastModifiedFromS3();
+            return s3LastModified != null && Duration.between(s3LastModified, Instant.now()).compareTo(CACHE_DURATION) < 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
     }
 }
