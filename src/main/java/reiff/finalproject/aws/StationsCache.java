@@ -4,13 +4,10 @@ import com.google.gson.Gson;
 import reiff.finalproject.CitiBikeService;
 import reiff.finalproject.Stations;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,14 +18,15 @@ public class StationsCache {
     private static final String BUCKET_NAME = "reiff.citibike";
     private static final String STATION_INFO_KEY = "stationInformation.json";
     private static final Duration CACHE_DURATION = Duration.ofHours(1);
+
     private Stations stationsResponse;
-    private Instant lastModified;
+    Instant lastModified;
+
     private final Gson gson = new Gson();
     private final S3Client s3Client;
     private final CitiBikeService service;
 
     public StationsCache(CitiBikeService service) {
-
         this.service = service;
         this.s3Client = S3Client.builder()
                 .region(Region.US_EAST_2)
@@ -37,55 +35,50 @@ public class StationsCache {
     }
 
     public Stations getStations() {
-
-        System.out.println("Started getStations");
-        if (stationsResponse != null && Duration.between(lastModified,
-                Instant.now()).compareTo(CACHE_DURATION) <= 0) {
+        if (stationsResponse != null && isCacheValid()) {
             return stationsResponse;
-
-        } else if (stationsResponse != null && Duration.between(lastModified,
-                Instant.now()).compareTo(CACHE_DURATION) > 0) {
-            lastModified = Instant.now();
-            writeToS3();
         }
 
-        if (stationsResponse == null && isS3DataRecent()) {
-            readFromS3();
-            lastModified = getLastModifiedFromS3();
-
-        } else if (stationsResponse == null && !isS3DataRecent()) {
-            lastModified = Instant.now();
-            writeToS3();
+        if (stationsResponse == null || !isCacheValid()) {
+            if (isS3DataRecent()) {
+                readFromS3();
+            } else {
+                downloadAndCacheStations();
+            }
         }
 
-
-        System.out.println("Ended getStations");
         return stationsResponse;
     }
 
+    private boolean isCacheValid() {
+        return Duration.between(lastModified,
+                Instant.now()).compareTo(CACHE_DURATION) <= 0;
+    }
+
+    private void downloadAndCacheStations() {
+        stationsResponse = service.stationsResponse().blockingGet();
+        lastModified = Instant.now();
+        writeToS3();
+    }
+
     private void readFromS3() {
-        System.out.println("Started readfroms3");
         try {
-            GetObjectRequest getObjectRequest = GetObjectRequest
-                    .builder()
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(BUCKET_NAME)
                     .key(STATION_INFO_KEY)
                     .build();
 
             InputStream inputStream = s3Client.getObject(getObjectRequest);
-            System.out.println("Ended readfroms3");
             stationsResponse = gson.fromJson(new InputStreamReader(inputStream), Stations.class);
-
+            lastModified = getLastModifiedFromS3();
         } catch (Exception e) {
             e.printStackTrace();
+            downloadAndCacheStations();
         }
     }
 
     private void writeToS3() {
-        System.out.println("Started writetos3");
-
         try {
-            stationsResponse = service.statusResponse().blockingGet();
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(BUCKET_NAME)
                     .key(STATION_INFO_KEY)
@@ -93,25 +86,21 @@ public class StationsCache {
 
             String jsonContent = gson.toJson(stationsResponse);
             s3Client.putObject(putObjectRequest, RequestBody.fromString(jsonContent));
-            System.out.println("Ended writes3");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private Instant getLastModifiedFromS3() {
-        System.out.println("Started lm from s3");
-        HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-                .bucket(BUCKET_NAME)
-                .key(STATION_INFO_KEY)
-                .build();
-
         try {
+            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(STATION_INFO_KEY)
+                    .build();
             HeadObjectResponse response = s3Client.headObject(headObjectRequest);
-            System.out.println("Ended lm from s3");
             return response.lastModified();
         } catch (Exception e) {
-            return null;
+            return Instant.now();
         }
     }
 
@@ -124,6 +113,5 @@ public class StationsCache {
             e.printStackTrace();
             return false;
         }
-
     }
 }
