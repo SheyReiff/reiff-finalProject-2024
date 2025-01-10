@@ -4,13 +4,18 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.google.gson.Gson;
-import reiff.finalproject.CitiBikeService;
-import reiff.finalproject.CitiBikeServiceFactory;
-import reiff.finalproject.ClosestStation;
-import reiff.finalproject.Station;
+import reiff.finalproject.*;
+
 
 public class ClosestStationRequestHandler implements RequestHandler<APIGatewayProxyRequestEvent, Response> {
 
+    private final StationsCache stationsCache;
+    private final CitiBikeService service;
+
+    public ClosestStationRequestHandler() {
+        this.service = new CitiBikeServiceFactory().getService();
+        this.stationsCache = new StationsCache(service);
+    }
     @Override
     public Response handleRequest(APIGatewayProxyRequestEvent event, Context context) {
         // Parse the request body
@@ -30,9 +35,9 @@ public class ClosestStationRequestHandler implements RequestHandler<APIGatewayPr
         }
 
         ClosestStation closestStation = new ClosestStation();
-        CitiBikeService service = new CitiBikeServiceFactory().getService();
-        Station[] stationsInfo = service.stationsResponse().blockingGet().data.stations;
+        Station[] stationsInfo = stationsCache.getStations().data.stations;
         Station[] statusInfo = service.statusResponse().blockingGet().data.stations;
+
         Station[] stations = closestStation.mergeStations(stationsInfo, statusInfo);
 
         Station startStation = closestStation.findClosestStationWithBikes(stations,

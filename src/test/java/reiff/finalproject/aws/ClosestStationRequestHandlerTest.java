@@ -32,7 +32,6 @@ public class ClosestStationRequestHandlerTest {
 
         Response response = requestHandler.handleRequest(apiEvent, null);
         //then
-
         assertNotNull(response.getStartStation().station_id);
 
     }

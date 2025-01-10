@@ -57,6 +57,7 @@ public class CitiBikeController {
         RecommendedRouteService service = new RecommendedRouteServiceFactory().getService();
         Single<Response> responseSingle = service.getStation(request);
 
+
         Disposable disposable = responseSingle
                 .subscribeOn(Schedulers.io())
                 .observeOn(SwingSchedulers.edt())
